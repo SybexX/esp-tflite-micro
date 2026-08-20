@@ -212,7 +212,10 @@ inline void EvalQuantizedPerChannel(
     TFLITE_DCHECK_EQ(filter_shape.DimensionsCount(), 4);
     TFLITE_DCHECK_EQ(output_shape.DimensionsCount(), 4);
     const int batch_size = MatchingDim(input_shape, 0, output_shape, 0);
-    const int input_depth = MatchingDim(input_shape, 3, filter_shape, 3);
+    /* No MatchingDim here: grouped conv has filter_ch < input_ch, and esp-nn
+     * >=1.2.3 falls back to ansi for it internally (filter channels are passed
+     * via filter_dims.channels below). */
+    const int input_depth = input_shape.Dims(3);
     const int output_depth = MatchingDim(filter_shape, 0, output_shape, 3);
 
     if (tflite::micro::GetTensorData<int8_t>(bias)) {
