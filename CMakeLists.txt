@@ -130,8 +130,13 @@ if("${IDF_VERSION_MAJOR}.${IDF_VERSION_MINOR}" VERSION_GREATER_EQUAL "5.0")
   target_compile_options(${COMPONENT_LIB} PRIVATE -Wno-error=stringop-overread)
 endif()
 
-# enable ESP-NN optimizations by Espressif
-target_compile_options(${COMPONENT_LIB} PRIVATE -DESP_NN)
+# enable ESP-NN optimizations by Espressif (gated by Kconfig). When disabled,
+# the esp_nn/ kernels are still compiled but fall back to TFLite Micro's
+# reference implementations internally (their #if ESP_NN paths compile out),
+# so no application or example code needs to change.
+if(CONFIG_ESP_TFLITE_MICRO_USE_ESP_NN)
+    target_compile_options(${COMPONENT_LIB} PRIVATE -DESP_NN)
+endif()
 
 set(common_flags -DTF_LITE_STATIC_MEMORY -DTF_LITE_DISABLE_X86_NEON -O3
                  -Wstrict-aliasing -Wno-unused-parameter -Wall -Wextra -Wvla
